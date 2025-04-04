@@ -1,0 +1,1150 @@
+<content><!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Circle-Observer Simulation</title>
+        <style>
+            body {
+                margin: 0;
+                overflow: hidden;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #000;
+                color: #0ff;
+            }
+            #container {
+                position: relative;
+                width: calc(100vw - 470px);
+                height: 100vh;
+                margin-top: 0;
+                margin-right: 470px;
+                border: 1px solid #0ff;
+                box-sizing: border-box;
+                background-color: #000;
+                float: left;
+            }
+            .controls {
+                position: fixed;
+                top: 0;
+                right: 0;
+                background-color: rgba(0, 10, 20, 0.8);
+                padding: 20px;
+                border-radius: 0;
+                z-index: 10;
+                border-left: 1px solid #0ff;
+                box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+                backdrop-filter: blur(5px);
+                width: 450px;
+                height: 100vh;
+                overflow-y: auto;
+                box-sizing: border-box;
+            }
+            .control-row {
+                margin-bottom: 15px;
+            }
+            .control-label {
+                display: block;
+                margin-bottom: 5px;
+                font-size: 14px;
+                color: #0ff;
+                text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+            }
+            .control-slider {
+                width: 100%;
+                display: flex;
+                align-items: center;
+            }
+            .control-slider input {
+                flex-grow: 1;
+                margin-right: 10px;
+            }
+            .control-slider span {
+                min-width: 50px;
+                text-align: right;
+                font-family: monospace;
+                color: #0ff;
+            }
+            .control-buttons {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            button {
+                background-color: rgba(0, 30, 60, 0.8);
+                color: #0ff;
+                border: 1px solid #0ff;
+                border-radius: 5px;
+                padding: 8px 15px;
+                font-size: 14px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                flex: 1;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-weight: bold;
+                box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+            }
+            button:hover {
+                background-color: rgba(0, 50, 80, 0.9);
+                box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+            }
+            button:active {
+                transform: scale(0.98);
+            }
+            .debug-info {
+                position: absolute;
+                bottom: 20px;
+                left: 20px;
+                background-color: rgba(0, 10, 20, 0.8);
+                padding: 10px 15px;
+                border-radius: 8px;
+                font-family: monospace;
+                font-size: 12px;
+                border: 1px solid #0ff;
+                color: #0ff;
+                box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+                backdrop-filter: blur(5px);
+                max-width: calc(100vw - 490px);
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+            /* Customize range input sliders */
+            input[type=range] {
+                -webkit-appearance: none;
+                height: 8px;
+                background: rgba(0, 60, 80, 0.5);
+                border-radius: 4px;
+                outline: none;
+                border: 1px solid rgba(0, 255, 255, 0.3);
+            }
+            input[type=range]::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: #0ff;
+                cursor: pointer;
+                box-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+            }
+            input[type=range]::-moz-range-thumb {
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: #0ff;
+                cursor: pointer;
+                box-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+                border: none;
+            }
+            
+            /* Style for observer speed slider */
+            #observerSpeed {
+                background: rgba(0, 60, 30, 0.5);
+                border: 1px solid rgba(0, 255, 0, 0.3);
+            }
+            
+            #observerSpeed::-webkit-slider-thumb {
+                background: #0f0;
+                box-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
+            }
+            
+            #observerSpeed::-moz-range-thumb {
+                background: #0f0;
+                box-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
+            }
+            
+            /* Direction controls */
+            .direction-controls {
+                margin-bottom: 15px;
+            }
+            
+            .direction-controls-title {
+                margin-bottom: 10px;
+                color: #0ff;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            
+            .analog-controls {
+                display: flex;
+                justify-content: space-around;
+                margin-top: 10px;
+            }
+            
+            .analog-control {
+                position: relative;
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                background-color: rgba(0, 20, 40, 0.7);
+                border: 1px solid rgba(0, 255, 255, 0.3);
+                margin: 10px;
+            }
+            
+            .analog-control-label {
+                text-align: center;
+                margin-bottom: 5px;
+                font-size: 12px;
+                color: #ace;
+            }
+            
+            .analog-control-base {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+            }
+            
+            .analog-control-stick {
+                position: absolute;
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                cursor: pointer;
+                z-index: 10;
+            }
+            
+            .analog-control-line {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                height: 2px;
+                transform-origin: left center;
+                pointer-events: none;
+            }
+            
+            .object-control .analog-control-stick {
+                background-color: #ff0000;
+                box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+            }
+            
+            .object-control .analog-control-line {
+                background-color: #ff0000;
+            }
+            
+            .observer-control .analog-control-stick {
+                background-color: #0ff;
+                box-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+            }
+            
+            .observer-control .analog-control-line {
+                background-color: #0ff;
+            }
+            
+            /* Observer control is greyed out when speed is 0 */
+            .observer-control.disabled {
+                opacity: 0.5;
+            }
+            
+            .observer-control.disabled .analog-control-stick {
+                cursor: default;
+            }
+            .title {
+                margin-top: 0;
+                margin-bottom: 15px;
+                color: #0ff;
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+                font-size: 20px;
+                text-align: center;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                border-bottom: 1px solid rgba(0, 255, 255, 0.5);
+                padding-bottom: 10px;
+            }
+            
+            .simulation-explanation {
+                margin-bottom: 20px;
+                color: #ace;
+                font-size: 14px;
+                line-height: 1.5;
+                text-align: justify;
+                border-left: 2px solid #0ff;
+                padding: 15px;
+                background-color: rgba(0, 20, 40, 0.5);
+                border-radius: 5px;
+                max-height: 35vh;
+                overflow-y: auto;
+            }
+            
+            .simulation-explanation p {
+                margin: 0 0 10px 0;
+            }
+            
+            .simulation-explanation p:last-child {
+                margin-bottom: 0;
+            }
+            
+            .analog-control.near-edge .analog-control-base {
+                background-color: rgba(255, 0, 0, 0.2);
+                border: 1px solid rgba(255, 0, 0, 0.5);
+            }
+            
+            .observer-control.disabled.near-edge .analog-control-base {
+                background-color: rgba(255, 0, 0, 0.1);
+                border: 1px solid rgba(255, 0, 0, 0.3);
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container">
+            <div class="controls">
+                <h3 class="title">Relativistic Wave Propagation Simulation</h3>
+                <div class="simulation-explanation">
+                    <p>This simulation demonstrates how we observe objects moving at speeds approaching the speed of light. The expanding circles represent light waves emanating from a moving source, with each circle's color (hue) encoding the state of the source at the moment of emission.</p>
+                    
+                    <p>As you watch the simulation, imagine the circle growth speed as the speed of light constant (c). The moving red dot is the source, emitting light waves (circles) at regular intervals. The cyan dot is you, the observer.</p>
+                    
+                    <p>Notice how the waves reach you not in the order they were emitted, but in the order dictated by their travel time. The colors tell you the history—which moment of the source's journey you're actually seeing. When waves intersect your position, a "ghost" appears, marking a moment of perception.</p>
+                    
+                    <p>This illustrates why fast-moving objects appear distorted in time and space: you're not seeing where they are, but where they were when light left them. Adjust the speeds to explore how relativistic effects transform our perception of reality, stretching time and compressing space in the dance between emission and observation.</p>
+                </div>
+                <div class="control-buttons">
+                    <button id="startBtn">Start</button>
+                    <button id="resetBtn">Reset</button>
+                    <button id="pauseBtn">Pause</button>
+                </div>
+                <div class="control-row">
+                    <label class="control-label" for="circleInterval">Circle Generation Interval (ms)</label>
+                    <div class="control-slider">
+                        <input type="range" id="circleInterval" min="10" max="500" step="10" value="50">
+                        <span id="circleIntervalValue">50</span>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <label class="control-label" for="circleSpeed">Light Speed (Circle Growth)</label>
+                    <div class="control-slider">
+                        <input type="range" id="circleSpeed" min="0.5" max="5" step="0.1" value="2">
+                        <span id="circleSpeedValue">2</span>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <label class="control-label" for="objectSpeed">Source Speed (relative to c)</label>
+                    <div class="control-slider">
+                        <input type="range" id="objectSpeed" min="0.5" max="5" step="0.1" value="1.5">
+                        <span id="objectSpeedValue">1.5</span>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <label class="control-label" for="fadeTime">Fade Duration (ms)</label>
+                    <div class="control-slider">
+                        <input type="range" id="fadeTime" min="100" max="10000" step="100" value="4000">
+                        <span id="fadeTimeValue">4000</span>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <label class="control-label" for="hueSpeed">Time Encoding (Hue Change)</label>
+                    <div class="control-slider">
+                        <input type="range" id="hueSpeed" min="0.1" max="5" step="0.1" value="0.5">
+                        <span id="hueSpeedValue">0.5</span>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <label class="control-label" for="observerSpeed">Observer Speed (relative to c)</label>
+                    <div class="control-slider">
+                        <input type="range" id="observerSpeed" min="0" max="5" step="0.1" value="0">
+                        <span id="observerSpeedValue">0</span>
+                    </div>
+                </div>
+                
+                <!-- Direction controls UI in the panel -->
+                <div class="direction-controls">
+                    <div class="direction-controls-title">Movement Direction Controls</div>
+                    <div class="analog-controls">
+                        <div>
+                            <div class="analog-control-label">Source Direction</div>
+                            <div class="analog-control object-control" id="object-control">
+                                <div class="analog-control-base"></div>
+                                <div class="analog-control-line" id="object-control-line"></div>
+                                <div class="analog-control-stick" id="object-control-stick"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="analog-control-label">Observer Direction</div>
+                            <div class="analog-control observer-control" id="observer-control">
+                                <div class="analog-control-base"></div>
+                                <div class="analog-control-line" id="observer-control-line"></div>
+                                <div class="analog-control-stick" id="observer-control-stick"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="debug-info" class="debug-info">
+                Circles: 0 | Ghosts: 0
+            </div>
+        </div>
+    
+        <script>
+            // DOM elements
+            const container = document.getElementById('container');
+            const startBtn = document.getElementById('startBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const circleIntervalInput = document.getElementById('circleInterval');
+            const circleIntervalValue = document.getElementById('circleIntervalValue');
+            const circleSpeedInput = document.getElementById('circleSpeed');
+            const circleSpeedValue = document.getElementById('circleSpeedValue');
+            const objectSpeedInput = document.getElementById('objectSpeed');
+            const objectSpeedValue = document.getElementById('objectSpeedValue');
+            const fadeTimeInput = document.getElementById('fadeTime');
+            const fadeTimeValue = document.getElementById('fadeTimeValue');
+            const hueSpeedInput = document.getElementById('hueSpeed');
+            const hueSpeedValue = document.getElementById('hueSpeedValue');
+            const observerSpeedInput = document.getElementById('observerSpeed');
+            const observerSpeedValue = document.getElementById('observerSpeedValue');
+            const debugInfo = document.getElementById('debug-info');
+    
+            // Configuration
+            let config = {
+                circleInterval: 50,    // ms between circle generations
+                circleSpeed: 2,        // growth speed of circles (analogous to speed of light)
+                objectSpeed: 1.5,      // speed of moving object
+                observerSpeed: 0,      // speed of observer (0 means stationary)
+                isRunning: false,      // simulation state (starts paused)
+                fadeTime: 4000,        // time for circles to fade (ms)
+                isStarted: false,      // tracks if simulation has been started
+                hueSpeed: 0.5,         // speed of hue cycling
+                currentHue: 0          // current hue value (0-360)
+            };
+    
+            // Update configuration values when inputs change
+            circleIntervalInput.addEventListener('input', () => {
+                config.circleInterval = parseInt(circleIntervalInput.value);
+                circleIntervalValue.textContent = config.circleInterval;
+            });
+    
+            circleSpeedInput.addEventListener('input', () => {
+                config.circleSpeed = parseFloat(circleSpeedInput.value);
+                circleSpeedValue.textContent = config.circleSpeed;
+            });
+    
+            objectSpeedInput.addEventListener('input', () => {
+                config.objectSpeed = parseFloat(objectSpeedInput.value);
+                objectSpeedValue.textContent = config.objectSpeed;
+            });
+            
+            fadeTimeInput.addEventListener('input', () => {
+                config.fadeTime = parseInt(fadeTimeInput.value);
+                fadeTimeValue.textContent = config.fadeTime;
+            });
+            
+            hueSpeedInput.addEventListener('input', () => {
+                config.hueSpeed = parseFloat(hueSpeedInput.value);
+                hueSpeedValue.textContent = config.hueSpeed;
+            });
+            
+            observerSpeedInput.addEventListener('input', () => {
+                config.observerSpeed = parseFloat(observerSpeedInput.value);
+                observerSpeedValue.textContent = config.observerSpeed;
+                updateObserverControlsVisibility();
+            });
+    
+            // Start simulation
+            startBtn.addEventListener('click', () => {
+                if (!config.isStarted) {
+                    initializePositions();
+                    config.isStarted = true;
+                    config.isRunning = true;
+                    startBtn.textContent = 'Restart';
+                    pauseBtn.textContent = 'Pause';
+                    
+                    // Initialize simulation if first start
+                    if (circles.length === 0 && ghosts.length === 0) {
+                        initPoints();
+                        update();
+                        circleGenerator();
+                    }
+                    
+                    // Update analog controls
+                    updateAnalogStickPosition(objectControlStick, objectControlLine, movingObject.vx, movingObject.vy);
+                    updateAnalogStickPosition(observerControlStick, observerControlLine, observer.vx, observer.vy);
+                } else {
+                    // Clear existing simulation
+                    resetSimulation();
+                    
+                    // Start new simulation
+                    initializePositions();
+                    config.isRunning = true;
+                    pauseBtn.textContent = 'Pause';
+                    
+                    // Update analog controls
+                    updateAnalogStickPosition(objectControlStick, objectControlLine, movingObject.vx, movingObject.vy);
+                    updateAnalogStickPosition(observerControlStick, observerControlLine, observer.vx, observer.vy);
+                }
+            });
+    
+            // Toggle pause/resume
+            pauseBtn.addEventListener('click', () => {
+                if (!config.isStarted) return; // Don't allow pause before start
+                
+                config.isRunning = !config.isRunning;
+                pauseBtn.textContent = config.isRunning ? 'Pause' : 'Resume';
+            });
+    
+            // Reset simulation
+            resetBtn.addEventListener('click', () => {
+                resetSimulation();
+                
+                if (config.isStarted) {
+                    initializePositions();
+                }
+            });
+            
+            // Function to reset the simulation
+            function resetSimulation() {
+                // Remove all circles and ghost images
+                document.querySelectorAll('.circle, .ghost').forEach(el => el.remove());
+                
+                // Reset circles and ghosts arrays
+                circles = [];
+                ghosts = [];
+                
+                // Update debug info
+                updateDebugInfo();
+            }
+            
+            // Function to initialize random positions
+            function initializePositions() {
+                // Set random position for moving object (with padding from edges)
+                const padding = 50;
+                const containerWidth = container.clientWidth;
+                const containerHeight = container.clientHeight;
+                
+                movingObject.x = padding + Math.random() * (containerWidth - 2 * padding);
+                movingObject.y = padding + Math.random() * (containerHeight - 2 * padding);
+                
+                // Set random position for observer (with padding from edges)
+                observer.x = padding + Math.random() * (containerWidth - 2 * padding);
+                observer.y = padding + Math.random() * (containerHeight - 2 * padding);
+                
+                // Set random velocity direction for moving object
+                const angleObj = Math.random() * Math.PI * 2;
+                movingObject.vx = Math.cos(angleObj);
+                movingObject.vy = Math.sin(angleObj);
+                
+                // Set random velocity direction for observer
+                const angleObs = Math.random() * Math.PI * 2;
+                observer.vx = Math.cos(angleObs);
+                observer.vy = Math.sin(angleObs);
+                
+                // Update the visual positions
+                updatePoints();
+            }
+    
+            // Create moving object and observer
+            const movingObject = {
+                x: 0,
+                y: 0,
+                radius: 5,
+                color: '#ff0000',
+                vx: 1,
+                vy: 1,
+                element: document.createElement('div')
+            };
+    
+            const observer = {
+                x: 0,
+                y: 0,
+                radius: 5,
+                color: '#0ff',
+                vx: 0, // Initial velocity
+                vy: 0,
+                element: document.createElement('div')
+            };
+    
+            // Arrays to store circles and ghosts
+            let circles = [];
+            let ghosts = [];
+    
+            // Frame dimensions and max size for circle deletion
+            const MAX_RADIUS_MULTIPLIER = 2; // Circles will be deleted at 2x frame size
+            
+            // Calculate max radius threshold (updated in the update loop)
+            function getMaxRadius() {
+                return Math.max(container.clientWidth, container.clientHeight) * MAX_RADIUS_MULTIPLIER;
+            }
+    
+            // Initialize points
+            function initPoints() {
+                // Style moving object (light source)
+                movingObject.element.style.position = 'absolute';
+                movingObject.element.style.width = `${movingObject.radius * 2}px`;
+                movingObject.element.style.height = `${movingObject.radius * 2}px`;
+                movingObject.element.style.borderRadius = '50%';
+                movingObject.element.style.backgroundColor = movingObject.color;
+                movingObject.element.style.transform = 'translate(-50%, -50%)';
+                movingObject.element.style.boxShadow = '0 0 10px #ff0000';
+                container.appendChild(movingObject.element);
+    
+                // Style observer as an abstract eye icon
+                observer.element.style.position = 'absolute';
+                observer.element.style.width = `${observer.radius * 5}px`;
+                observer.element.style.height = `${observer.radius * 3}px`;
+                observer.element.style.borderRadius = '50%';
+                observer.element.style.border = `2px solid ${observer.color}`;
+                observer.element.style.backgroundColor = 'transparent';
+                observer.element.style.transform = 'translate(-50%, -50%)';
+                observer.element.style.boxShadow = '0 0 10px #0ff';
+                
+                // Add pupil to the eye
+                const pupil = document.createElement('div');
+                pupil.style.position = 'absolute';
+                pupil.style.width = `${observer.radius * 2}px`;
+                pupil.style.height = `${observer.radius * 2}px`;
+                pupil.style.borderRadius = '50%';
+                pupil.style.backgroundColor = observer.color;
+                pupil.style.left = '50%';
+                pupil.style.top = '50%';
+                pupil.style.transform = 'translate(-50%, -50%)';
+                observer.element.appendChild(pupil);
+                
+                container.appendChild(observer.element);
+                
+                // Initialize positions
+                initializePositions();
+            }
+    
+            // Update point positions
+            function updatePoints() {
+                movingObject.element.style.left = `${movingObject.x}px`;
+                movingObject.element.style.top = `${movingObject.y}px`;
+    
+                observer.element.style.left = `${observer.x}px`;
+                observer.element.style.top = `${observer.y}px`;
+            }
+    
+            // Create a new circle
+            function createCircle(x, y) {
+                const circleElement = document.createElement('div');
+                circleElement.classList.add('circle');
+                circleElement.style.position = 'absolute';
+                circleElement.style.left = `${x}px`;
+                circleElement.style.top = `${y}px`;
+                circleElement.style.borderRadius = '50%';
+                
+                // Use current hue for circle color
+                const hue = config.currentHue;
+                circleElement.style.border = `2px solid hsla(${hue}, 100%, 50%, 1)`;
+                circleElement.style.transform = 'translate(-50%, -50%)';
+                container.appendChild(circleElement);
+    
+                const birthTime = Date.now();
+                
+                circles.push({
+                    x,
+                    y,
+                    radius: 0,
+                    element: circleElement,
+                    birthTime,
+                    hasHitObserver: false,
+                    hue: hue // Store the hue for this circle
+                });
+            }
+    
+            // Create a ghost image
+            function createGhost(x, y, hue) {
+                const ghostElement = document.createElement('div');
+                ghostElement.classList.add('ghost');
+                ghostElement.style.position = 'absolute';
+                ghostElement.style.left = `${x}px`;
+                ghostElement.style.top = `${y}px`;
+                ghostElement.style.width = '8px';
+                ghostElement.style.height = '8px';
+                ghostElement.style.borderRadius = '50%';
+                ghostElement.style.backgroundColor = `hsla(${hue}, 100%, 50%, 1)`;
+                ghostElement.style.transform = 'translate(-50%, -50%)';
+                container.appendChild(ghostElement);
+    
+                const birthTime = Date.now();
+                
+                ghosts.push({
+                    element: ghostElement,
+                    birthTime,
+                    hue: hue // Store the hue for this ghost
+                });
+            }
+    
+            // Update simulation
+            function update() {
+                if (!config.isRunning) {
+                    requestAnimationFrame(update);
+                    return;
+                }
+    
+                // Update moving object position
+                movingObject.x += movingObject.vx * config.objectSpeed;
+                movingObject.y += movingObject.vy * config.objectSpeed;
+    
+                // Boundary checks for moving object
+                if (movingObject.x <= movingObject.radius || movingObject.x >= container.clientWidth - movingObject.radius) {
+                    movingObject.vx *= -1;
+                }
+                if (movingObject.y <= movingObject.radius || movingObject.y >= container.clientHeight - movingObject.radius) {
+                    movingObject.vy *= -1;
+                }
+                
+                // Update observer position if speed is not zero
+                if (config.observerSpeed > 0) {
+                    observer.x += observer.vx * config.observerSpeed;
+                    observer.y += observer.vy * config.observerSpeed;
+                    
+                    // Boundary checks for observer
+                    if (observer.x <= observer.radius || observer.x >= container.clientWidth - observer.radius) {
+                        observer.vx *= -1;
+                    }
+                    if (observer.y <= observer.radius || observer.y >= container.clientHeight - observer.radius) {
+                        observer.vy *= -1;
+                    }
+                }
+    
+                // Update points position
+                updatePoints();
+                
+                // Update the hue
+                config.currentHue = (config.currentHue + config.hueSpeed) % 360;
+                
+                // Get current max radius threshold
+                const maxRadius = getMaxRadius();
+                let circlesDeleted = 0;
+                
+                // Update edge proximity visualization
+                if (isCloseToEdge(movingObject.x, movingObject.y)) {
+                    objectControl.classList.add('near-edge');
+                } else {
+                    objectControl.classList.remove('near-edge');
+                }
+                
+                if (isCloseToEdge(observer.x, observer.y)) {
+                    observerControl.classList.add('near-edge');
+                } else {
+                    observerControl.classList.remove('near-edge');
+                }
+    
+                // Update circles
+                for (let i = circles.length - 1; i >= 0; i--) {
+                    const circle = circles[i];
+                    
+                    // Grow circle
+                    circle.radius += config.circleSpeed;
+                    circle.element.style.width = `${circle.radius * 2}px`;
+                    circle.element.style.height = `${circle.radius * 2}px`;
+                    
+                    // Calculate elapsed time for fading
+                    const elapsedTime = Date.now() - circle.birthTime;
+                    const opacity = Math.max(0, 1 - elapsedTime / config.fadeTime);
+                    
+                    // Update circle opacity
+                    circle.element.style.border = `2px solid hsla(${circle.hue}, 100%, 50%, ${opacity})`;
+                    
+                    // Check collision with observer if not already hit
+                    if (!circle.hasHitObserver) {
+                        const distance = Math.sqrt(
+                            Math.pow(circle.x - observer.x, 2) + 
+                            Math.pow(circle.y - observer.y, 2)
+                        );
+                        
+                        if (Math.abs(distance - circle.radius) < 2) {
+                            // Circle hit observer, create ghost at circle origin (source position when wave was emitted)
+                            circle.hasHitObserver = true;
+                            createGhost(circle.x, circle.y, circle.hue);
+                        }
+                    }
+                    
+                    // Check if the circle has grown too large
+                    if (circle.radius >= maxRadius) {
+                        circle.element.remove();
+                        circles.splice(i, 1);
+                        circlesDeleted++;
+                    }
+                }
+                
+                // Update ghosts
+                for (let i = ghosts.length - 1; i >= 0; i--) {
+                    const ghost = ghosts[i];
+                    
+                    // Calculate elapsed time for fading (ghosts fade twice as fast as circles)
+                    const elapsedTime = Date.now() - ghost.birthTime;
+                    const opacity = Math.max(0, 1 - elapsedTime / (config.fadeTime / 2));
+                    
+                    // Update ghost opacity
+                    ghost.element.style.backgroundColor = `hsla(${ghost.hue}, 100%, 50%, ${opacity})`;
+                    
+                    // Remove old ghosts
+                    if (opacity <= 0) {
+                        ghost.element.remove();
+                        ghosts.splice(i, 1);
+                    }
+                }
+                
+                // Update debug info
+                updateDebugInfo(circlesDeleted);
+                
+                // Update analog stick positions to reflect current vectors
+                if (config.isRunning) {
+                    updateAnalogStickPosition(objectControlStick, objectControlLine, movingObject.vx, movingObject.vy);
+                    updateAnalogStickPosition(observerControlStick, observerControlLine, observer.vx, observer.vy);
+                }
+    
+                requestAnimationFrame(update);
+            }
+            
+            // Update debug info
+            function updateDebugInfo(circlesDeleted = 0) {
+                const sourceNearEdge = isCloseToEdge(movingObject.x, movingObject.y);
+                const observerNearEdge = isCloseToEdge(observer.x, observer.y);
+                const edgeStatus = sourceNearEdge || observerNearEdge ? 
+                    ` | Edge proximity: ${sourceNearEdge ? 'Source' : ''}${sourceNearEdge && observerNearEdge ? ' & ' : ''}${observerNearEdge ? 'Observer' : ''}` : '';
+                
+                debugInfo.textContent = `Photon Waves: ${circles.length} | Observations: ${ghosts.length} | Frame: ${container.clientWidth}×${container.clientHeight} | Light Travel Distance: ${getMaxRadius().toFixed(0)} | Deleted: ${circlesDeleted} | Current Time State: ${Math.round(config.currentHue)}°${edgeStatus}`;
+            }
+    
+            // Periodically create new circles
+            function circleGenerator() {
+                if (config.isRunning) {
+                    createCircle(movingObject.x, movingObject.y);
+                }
+                setTimeout(circleGenerator, config.circleInterval);
+            }
+            
+            // Initialize the debug info
+            updateDebugInfo();
+            
+            // Log initial setup information
+            console.log(`Frame dimensions: ${container.clientWidth}x${container.clientHeight}`);
+            console.log(`Max circle size before removal: ${getMaxRadius()}`);
+            
+            // Don't automatically initialize or start the simulation
+            // Wait for the start button to be pressed
+            
+            // Setup analog direction controls
+            const objectControl = document.getElementById('object-control');
+            const objectControlStick = document.getElementById('object-control-stick');
+            const objectControlLine = document.getElementById('object-control-line');
+            
+            const observerControl = document.getElementById('observer-control');
+            const observerControlStick = document.getElementById('observer-control-stick');
+            const observerControlLine = document.getElementById('observer-control-line');
+            
+            // Function to update analog stick position
+            function updateAnalogStickPosition(stick, line, vx, vy) {
+                // Get the control's dimensions
+                const controlRadius = stick.parentElement.offsetWidth / 2;
+                const stickRadius = stick.offsetWidth / 2;
+                
+                // Calculate position (clamped to control boundaries)
+                const length = Math.sqrt(vx * vx + vy * vy);
+                const normalizedVx = length > 0 ? vx / length : 0;
+                const normalizedVy = length > 0 ? vy / length : 0;
+                
+                // Position stick
+                const posX = normalizedVx * (controlRadius - stickRadius);
+                const posY = normalizedVy * (controlRadius - stickRadius);
+                
+                stick.style.transform = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px))`;
+                
+                // Update direction line
+                line.style.width = `${controlRadius - stickRadius}px`;
+                const angle = Math.atan2(normalizedVy, normalizedVx) * (180 / Math.PI);
+                line.style.transform = `rotate(${angle}deg)`;
+            }
+            
+            // Function to handle analog stick dragging
+            function setupAnalogControl(control, stick, line, updateVelocity, getPosition) {
+                let isDragging = false;
+                
+                // Mouse/touch events
+                stick.addEventListener('mousedown', (e) => {
+                    if (!config.isStarted) return;
+                    // Only allow dragging if not close to edge
+                    const position = getPosition();
+                    if (!isCloseToEdge(position.x, position.y)) {
+                        isDragging = true;
+                    }
+                    e.preventDefault();
+                });
+                
+                control.addEventListener('mousedown', (e) => {
+                    if (!config.isStarted) return;
+                    
+                    // Check if object is close to edge
+                    const position = getPosition();
+                    if (isCloseToEdge(position.x, position.y)) {
+                        return; // Don't allow direction change near edges
+                    }
+                    
+                    // Calculate click position relative to control center
+                    const rect = control.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    
+                    const clickX = e.clientX - centerX;
+                    const clickY = e.clientY - centerY;
+                    
+                    // Normalize
+                    const distance = Math.sqrt(clickX * clickX + clickY * clickY);
+                    const controlRadius = rect.width / 2;
+                    
+                    // Calculate normalized vector
+                    let vx, vy;
+                    if (distance > 0) {
+                        vx = clickX / distance;
+                        vy = clickY / distance;
+                    } else {
+                        vx = 0;
+                        vy = 0;
+                    }
+                    
+                    // Update velocity callback
+                    updateVelocity(vx, vy);
+                    
+                    // Update stick position
+                    updateAnalogStickPosition(stick, line, vx, vy);
+                    
+                    isDragging = true;
+                    e.preventDefault();
+                });
+                
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging || !config.isStarted) return;
+                    
+                    // Check if object is close to edge
+                    const position = getPosition();
+                    if (isCloseToEdge(position.x, position.y)) {
+                        isDragging = false;
+                        return; // Stop dragging when near edges
+                    }
+                    
+                    // Calculate mouse position relative to control center
+                    const rect = control.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    
+                    const mouseX = e.clientX - centerX;
+                    const mouseY = e.clientY - centerY;
+                    
+                    // Normalize
+                    const distance = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
+                    const controlRadius = rect.width / 2;
+                    
+                    // Calculate normalized vector
+                    let vx, vy;
+                    if (distance > 0) {
+                        vx = mouseX / distance;
+                        vy = mouseY / distance;
+                    } else {
+                        vx = 0;
+                        vy = 0;
+                    }
+                    
+                    // Update velocity callback
+                    updateVelocity(vx, vy);
+                    
+                    // Update stick position
+                    updateAnalogStickPosition(stick, line, vx, vy);
+                });
+                
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+                
+                // Touch events
+                stick.addEventListener('touchstart', (e) => {
+                    if (!config.isStarted) return;
+                    // Check if object is close to edge
+                    const position = getPosition();
+                    if (!isCloseToEdge(position.x, position.y)) {
+                        isDragging = true;
+                    }
+                    e.preventDefault();
+                });
+                
+                control.addEventListener('touchstart', (e) => {
+                    if (!config.isStarted) return;
+                    
+                    // Check if object is close to edge
+                    const position = getPosition();
+                    if (isCloseToEdge(position.x, position.y)) {
+                        return; // Don't allow direction change near edges
+                    }
+                    
+                    // Calculate touch position relative to control center
+                    const rect = control.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    
+                    const touch = e.touches[0];
+                    const touchX = touch.clientX - centerX;
+                    const touchY = touch.clientY - centerY;
+                    
+                    // Normalize
+                    const distance = Math.sqrt(touchX * touchX + touchY * touchY);
+                    
+                    // Calculate normalized vector
+                    let vx, vy;
+                    if (distance > 0) {
+                        vx = touchX / distance;
+                        vy = touchY / distance;
+                    } else {
+                        vx = 0;
+                        vy = 0;
+                    }
+                    
+                    // Update velocity callback
+                    updateVelocity(vx, vy);
+                    
+                    // Update stick position
+                    updateAnalogStickPosition(stick, line, vx, vy);
+                    
+                    isDragging = true;
+                    e.preventDefault();
+                });
+                
+                document.addEventListener('touchmove', (e) => {
+                    if (!isDragging || !config.isStarted) return;
+                    
+                    // Check if object is close to edge
+                    const position = getPosition();
+                    if (isCloseToEdge(position.x, position.y)) {
+                        isDragging = false;
+                        return; // Stop dragging when near edges
+                    }
+                    
+                    // Calculate touch position relative to control center
+                    const rect = control.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    
+                    const touch = e.touches[0];
+                    const touchX = touch.clientX - centerX;
+                    const touchY = touch.clientY - centerY;
+                    
+                    // Normalize
+                    const distance = Math.sqrt(touchX * touchX + touchY * touchY);
+                    
+                    // Calculate normalized vector
+                    let vx, vy;
+                    if (distance > 0) {
+                        vx = touchX / distance;
+                        vy = touchY / distance;
+                    } else {
+                        vx = 0;
+                        vy = 0;
+                    }
+                    
+                    // Update velocity callback
+                    updateVelocity(vx, vy);
+                    
+                    // Update stick position
+                    updateAnalogStickPosition(stick, line, vx, vy);
+                    
+                    e.preventDefault();
+                });
+                
+                document.addEventListener('touchend', () => {
+                    isDragging = false;
+                });
+            }
+            
+            // Setup the object control
+            setupAnalogControl(
+                objectControl, 
+                objectControlStick,
+                objectControlLine,
+                (vx, vy) => {
+                    movingObject.vx = vx;
+                    movingObject.vy = vy;
+                },
+                () => {
+                    return {
+                        x: movingObject.x,
+                        y: movingObject.y
+                    };
+                }
+            );
+            
+            // Setup the observer control
+            setupAnalogControl(
+                observerControl,
+                observerControlStick,
+                observerControlLine,
+                (vx, vy) => {
+                    if (config.observerSpeed > 0) {
+                        observer.vx = vx;
+                        observer.vy = vy;
+                    }
+                },
+                () => {
+                    return {
+                        x: observer.x,
+                        y: observer.y
+                    };
+                }
+            );
+            
+            // Update UI visibility for observer controls based on speed
+            function updateObserverControlsVisibility() {
+                if (config.observerSpeed > 0) {
+                    observerControl.classList.remove('disabled');
+                    updateAnalogStickPosition(
+                        observerControlStick,
+                        observerControlLine,
+                        observer.vx,
+                        observer.vy
+                    );
+                } else {
+                    observerControl.classList.add('disabled');
+                    // Reset observer direction indicators
+                    updateAnalogStickPosition(
+                        observerControlStick,
+                        observerControlLine,
+                        0,
+                        0
+                    );
+                }
+            }
+            
+            // Check if an object is close to the edge (within 5% of frame size)
+            function isCloseToEdge(x, y) {
+                const edgeThreshold = Math.min(container.clientWidth, container.clientHeight) * 0.05;
+                return (
+                    x < edgeThreshold || 
+                    x > container.clientWidth - edgeThreshold ||
+                    y < edgeThreshold || 
+                    y > container.clientHeight - edgeThreshold
+                );
+            }
+            
+            // Initial control setup
+            updateAnalogStickPosition(objectControlStick, objectControlLine, movingObject.vx, movingObject.vy);
+            updateAnalogStickPosition(observerControlStick, observerControlLine, observer.vx, observer.vy);
+            updateObserverControlsVisibility();
+            
+            // Handle window resize to update maxRadius calculations
+            window.addEventListener('resize', () => {
+                console.log(`Window resized. New frame dimensions: ${container.clientWidth}x${container.clientHeight}`);
+                console.log(`New max radius: ${getMaxRadius()}`);
+                
+                // Optional: Adjust positions if objects are outside the new container bounds
+                if (config.isStarted) {
+                    const padding = 50;
+                    const containerWidth = container.clientWidth;
+                    const containerHeight = container.clientHeight;
+                    
+                    // Keep objects within the container boundaries
+                    movingObject.x = Math.min(Math.max(movingObject.x, padding), containerWidth - padding);
+                    movingObject.y = Math.min(Math.max(movingObject.y, padding), containerHeight - padding);
+                    
+                    observer.x = Math.min(Math.max(observer.x, padding), containerWidth - padding);
+                    observer.y = Math.min(Math.max(observer.y, padding), containerHeight - padding);
+                    
+                    updatePoints();
+                }
+            });
+        </script>
+    </body>
+    </html>
