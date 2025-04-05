@@ -1015,7 +1015,7 @@
                     isDragging = false;
                 });
                 
-                // Touch events
+                // Touch events - Fix passive event listener issue
                 stick.addEventListener('touchstart', (e) => {
                     if (!config.isStarted) return;
                     // Check if object is close to edge
@@ -1024,7 +1024,7 @@
                         isDragging = true;
                     }
                     e.preventDefault();
-                });
+                }, { passive: false });
                 
                 control.addEventListener('touchstart', (e) => {
                     if (!config.isStarted) return;
@@ -1065,7 +1065,7 @@
                     
                     isDragging = true;
                     e.preventDefault();
-                });
+                }, { passive: false });
                 
                 document.addEventListener('touchmove', (e) => {
                     if (!isDragging || !config.isStarted) return;
@@ -1106,7 +1106,7 @@
                     updateAnalogStickPosition(stick, line, vx, vy);
                     
                     e.preventDefault();
-                });
+                }, { passive: false });
                 
                 document.addEventListener('touchend', () => {
                     isDragging = false;
