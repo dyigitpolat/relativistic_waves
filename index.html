@@ -409,7 +409,8 @@
                 fadeTime: 4000,        // time for circles to fade (ms)
                 isStarted: false,      // tracks if simulation has been started
                 hueSpeed: 0.5,         // speed of hue cycling
-                currentHue: 0          // current hue value (0-360)
+                currentHue: 0,         // current hue value (0-360)
+                ghostCooldown: 300     // minimum ms between ghost creations for same circle
             };
     
             // Update configuration values when inputs change
@@ -641,7 +642,7 @@
                     radius: 0,
                     element: circleElement,
                     birthTime,
-                    hasHitObserver: false,
+                    lastHitTime: 0, // Track when the circle was last observed
                     hue: hue // Store the hue for this circle
                 });
             }
@@ -741,18 +742,17 @@
                     // Update circle opacity
                     circle.element.style.border = `2px solid hsla(${circle.hue}, 100%, 50%, ${opacity})`;
                     
-                    // Check collision with observer if not already hit
-                    if (!circle.hasHitObserver) {
-                        const distance = Math.sqrt(
-                            Math.pow(circle.x - observer.x, 2) + 
-                            Math.pow(circle.y - observer.y, 2)
-                        );
-                        
-                        if (Math.abs(distance - circle.radius) < 2) {
-                            // Circle hit observer, create ghost at circle origin (source position when wave was emitted)
-                            circle.hasHitObserver = true;
-                            createGhost(circle.x, circle.y, circle.hue);
-                        }
+                    // Check collision with observer
+                    const distance = Math.sqrt(
+                        Math.pow(circle.x - observer.x, 2) + 
+                        Math.pow(circle.y - observer.y, 2)
+                    );
+                    
+                    const currentTime = Date.now();
+                    if (Math.abs(distance - circle.radius) < 2 && (currentTime - circle.lastHitTime > config.ghostCooldown)) {
+                        // Circle hit observer, create ghost at circle origin (source position when wave was emitted)
+                        createGhost(circle.x, circle.y, circle.hue);
+                        circle.lastHitTime = currentTime;
                     }
                     
                     // Check if the circle has grown too large
