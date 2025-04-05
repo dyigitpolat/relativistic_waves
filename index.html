@@ -15,10 +15,11 @@
             #container {
                 position: relative;
                 width: calc(100vw - 470px);
-                height: 100vh;
+                height: calc(100vh - 40px);
                 margin-top: 0;
                 margin-right: 470px;
                 border: 1px solid #0ff;
+                border-bottom: none;
                 box-sizing: border-box;
                 background-color: #000;
                 float: left;
@@ -93,22 +94,25 @@
                 transform: scale(0.98);
             }
             .debug-info {
-                position: absolute;
-                bottom: 20px;
-                left: 20px;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: calc(100vw - 470px);
+                height: 40px;
                 background-color: rgba(0, 10, 20, 0.8);
                 padding: 10px 15px;
-                border-radius: 8px;
                 font-family: monospace;
                 font-size: 12px;
-                border: 1px solid #0ff;
+                border-top: 1px solid #0ff;
                 color: #0ff;
                 box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
                 backdrop-filter: blur(5px);
-                max-width: calc(100vw - 490px);
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
+                z-index: 20;
+                text-align: center;
+                box-sizing: border-box;
             }
             /* Customize range input sliders */
             input[type=range] {
@@ -268,8 +272,6 @@
                 padding: 15px;
                 background-color: rgba(0, 20, 40, 0.5);
                 border-radius: 5px;
-                max-height: 35vh;
-                overflow-y: auto;
             }
             
             .simulation-explanation p {
@@ -293,9 +295,10 @@
             @media (max-width: 768px) {
                 #container {
                     width: 100vw !important;
-                    height: calc(100vh - 350px) !important;
+                    height: calc(100vh - 40px - 350px) !important;
                     margin-right: 0;
                     float: none;
+                    border-bottom: none;
                 }
                 .controls {
                     position: fixed;
@@ -308,105 +311,124 @@
                     border-left: none;
                     border-top: 1px solid #0ff;
                     box-shadow: 0 -5px 15px rgba(0, 255, 255, 0.3);
+                    overflow-y: auto;
                 }
                 .debug-info {
-                    max-width: calc(100vw - 40px);
-                    bottom: 360px;
+                    width: 100%;
+                    height: 40px;
+                    bottom: 350px;
+                    left: 0;
+                    border-radius: 0;
                     font-size: 10px;
-                    padding: 8px 10px;
+                    padding: 10px 5px;
                 }
                 .simulation-explanation {
-                    max-height: 80px;
+                    font-size: 12px;
+                    padding: 10px;
+                    line-height: 1.4;
+                }
+                .analog-control {
+                    width: 100px;
+                    height: 100px;
+                    margin: 5px;
+                }
+                .control-buttons {
+                    margin-bottom: 15px;
+                }
+                .direction-controls {
+                    margin-bottom: 15px;
                 }
             }
         </style>
     </head>
     <body>
         <div id="container">
-            <div class="controls">
-                <h3 class="title">Relativistic Wave Propagation Simulation</h3>
-                <div class="simulation-explanation">
-                    <p>This simulation demonstrates how we observe objects moving at speeds approaching the speed of light. The expanding circles represent light waves emanating from a moving source, with each circle's color (hue) encoding the state of the source at the moment of emission.</p>
-                    
-                    <p>As you watch the simulation, imagine the circle growth speed as the speed of light constant (c). The moving red dot is the source, emitting light waves (circles) at regular intervals. The cyan dot is you, the observer.</p>
-                    
-                    <p>Notice how the waves reach you not in the order they were emitted, but in the order dictated by their travel time. The colors tell you the history—which moment of the source's journey you're actually seeing. When waves intersect your position, a "ghost" appears, marking a moment of perception.</p>
-                    
-                    <p>This illustrates why fast-moving objects appear distorted in time and space: you're not seeing where they are, but where they were when light left them. Adjust the speeds to explore how relativistic effects transform our perception of reality, stretching time and compressing space in the dance between emission and observation.</p>
-                </div>
-                <div class="control-buttons">
-                    <button id="startBtn">Start</button>
-                    <button id="resetBtn">Reset</button>
-                    <button id="pauseBtn">Pause</button>
-                </div>
-                <div class="control-row">
-                    <label class="control-label" for="circleInterval">Circle Generation Interval (ms)</label>
-                    <div class="control-slider">
-                        <input type="range" id="circleInterval" min="10" max="500" step="10" value="50">
-                        <span id="circleIntervalValue">50</span>
-                    </div>
-                </div>
-                <div class="control-row">
-                    <label class="control-label" for="circleSpeed">Light Speed (Circle Growth)</label>
-                    <div class="control-slider">
-                        <input type="range" id="circleSpeed" min="0.5" max="5" step="0.1" value="2">
-                        <span id="circleSpeedValue">2</span>
-                    </div>
-                </div>
-                <div class="control-row">
-                    <label class="control-label" for="objectSpeed">Source Speed (relative to c)</label>
-                    <div class="control-slider">
-                        <input type="range" id="objectSpeed" min="0.5" max="5" step="0.1" value="1.5">
-                        <span id="objectSpeedValue">1.5</span>
-                    </div>
-                </div>
-                <div class="control-row">
-                    <label class="control-label" for="fadeTime">Fade Duration (ms)</label>
-                    <div class="control-slider">
-                        <input type="range" id="fadeTime" min="100" max="10000" step="100" value="4000">
-                        <span id="fadeTimeValue">4000</span>
-                    </div>
-                </div>
-                <div class="control-row">
-                    <label class="control-label" for="hueSpeed">Time Encoding (Hue Change)</label>
-                    <div class="control-slider">
-                        <input type="range" id="hueSpeed" min="0.1" max="5" step="0.1" value="0.5">
-                        <span id="hueSpeedValue">0.5</span>
-                    </div>
-                </div>
-                <div class="control-row">
-                    <label class="control-label" for="observerSpeed">Observer Speed (relative to c)</label>
-                    <div class="control-slider">
-                        <input type="range" id="observerSpeed" min="0" max="5" step="0.1" value="0">
-                        <span id="observerSpeedValue">0</span>
-                    </div>
-                </div>
-                
-                <!-- Direction controls UI in the panel -->
-                <div class="direction-controls">
-                    <div class="direction-controls-title">Movement Direction Controls</div>
-                    <div class="analog-controls">
-                        <div>
-                            <div class="analog-control-label">Source Direction</div>
-                            <div class="analog-control object-control" id="object-control">
-                                <div class="analog-control-base"></div>
-                                <div class="analog-control-line" id="object-control-line"></div>
-                                <div class="analog-control-stick" id="object-control-stick"></div>
-                            </div>
+        </div>
+        <div id="debug-info" class="debug-info">
+            Circles: 0 | Ghosts: 0
+        </div>
+        <div class="controls">
+            <h3 class="title">Relativistic Wave Propagation Simulation</h3>
+            <div class="control-buttons">
+                <button id="startBtn">Start</button>
+                <button id="resetBtn">Reset</button>
+                <button id="pauseBtn">Pause</button>
+            </div>
+            
+            <!-- Direction controls UI in the panel -->
+            <div class="direction-controls">
+                <div class="direction-controls-title">Movement Direction Controls</div>
+                <div class="analog-controls">
+                    <div>
+                        <div class="analog-control-label">Source Direction</div>
+                        <div class="analog-control object-control" id="object-control">
+                            <div class="analog-control-base"></div>
+                            <div class="analog-control-line" id="object-control-line"></div>
+                            <div class="analog-control-stick" id="object-control-stick"></div>
                         </div>
-                        <div>
-                            <div class="analog-control-label">Observer Direction</div>
-                            <div class="analog-control observer-control" id="observer-control">
-                                <div class="analog-control-base"></div>
-                                <div class="analog-control-line" id="observer-control-line"></div>
-                                <div class="analog-control-stick" id="observer-control-stick"></div>
-                            </div>
+                    </div>
+                    <div>
+                        <div class="analog-control-label">Observer Direction</div>
+                        <div class="analog-control observer-control" id="observer-control">
+                            <div class="analog-control-base"></div>
+                            <div class="analog-control-line" id="observer-control-line"></div>
+                            <div class="analog-control-stick" id="observer-control-stick"></div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div id="debug-info" class="debug-info">
-                Circles: 0 | Ghosts: 0
+            
+            <div class="control-row">
+                <label class="control-label" for="circleInterval">Circle Generation Interval (ms)</label>
+                <div class="control-slider">
+                    <input type="range" id="circleInterval" min="10" max="500" step="10" value="50">
+                    <span id="circleIntervalValue">50</span>
+                </div>
+            </div>
+            <div class="control-row">
+                <label class="control-label" for="circleSpeed">Light Speed (Circle Growth)</label>
+                <div class="control-slider">
+                    <input type="range" id="circleSpeed" min="0.5" max="5" step="0.1" value="2">
+                    <span id="circleSpeedValue">2</span>
+                </div>
+            </div>
+            <div class="control-row">
+                <label class="control-label" for="objectSpeed">Source Speed (relative to c)</label>
+                <div class="control-slider">
+                    <input type="range" id="objectSpeed" min="0.5" max="5" step="0.1" value="1.5">
+                    <span id="objectSpeedValue">1.5</span>
+                </div>
+            </div>
+            <div class="control-row">
+                <label class="control-label" for="fadeTime">Fade Duration (ms)</label>
+                <div class="control-slider">
+                    <input type="range" id="fadeTime" min="100" max="10000" step="100" value="4000">
+                    <span id="fadeTimeValue">4000</span>
+                </div>
+            </div>
+            <div class="control-row">
+                <label class="control-label" for="hueSpeed">Time Encoding (Hue Change)</label>
+                <div class="control-slider">
+                    <input type="range" id="hueSpeed" min="0.1" max="5" step="0.1" value="0.5">
+                    <span id="hueSpeedValue">0.5</span>
+                </div>
+            </div>
+            <div class="control-row">
+                <label class="control-label" for="observerSpeed">Observer Speed (relative to c)</label>
+                <div class="control-slider">
+                    <input type="range" id="observerSpeed" min="0" max="5" step="0.1" value="0">
+                    <span id="observerSpeedValue">0</span>
+                </div>
+            </div>
+            
+            <div class="simulation-explanation">
+                <p>This simulation demonstrates how we observe objects moving at speeds approaching the speed of light. The expanding circles represent light waves emanating from a moving source, with each circle's color (hue) encoding the state of the source at the moment of emission.</p>
+                
+                <p>As you watch the simulation, imagine the circle growth speed as the speed of light constant (c). The moving red dot is the source, emitting light waves (circles) at regular intervals. The cyan dot is you, the observer.</p>
+                
+                <p>Notice how the waves reach you not in the order they were emitted, but in the order dictated by their travel time. The colors tell you the history—which moment of the source's journey you're actually seeing. When waves intersect your position, a "ghost" appears, marking a moment of perception.</p>
+                
+                <p>This illustrates why fast-moving objects appear distorted in time and space: you're not seeing where they are, but where they were when light left them. Adjust the speeds to explore how relativistic effects transform our perception of reality, stretching time and compressing space in the dance between emission and observation.</p>
             </div>
         </div>
     
